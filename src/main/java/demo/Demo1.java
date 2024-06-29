@@ -1,17 +1,13 @@
 package demo;
 
 import com.oracle.truffle.api.CallTarget;
-import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.RootNode;
 
 public class Demo1 {
-
     abstract static class Expression extends Node {
-
         abstract int execute(int[] arguments);
-
     }
 
     static class Add extends Expression {
@@ -29,7 +25,6 @@ public class Demo1 {
     }
 
     static class Arg extends Expression {
-
         final int index;
 
         Arg(int index) {
@@ -40,12 +35,12 @@ public class Demo1 {
         int execute(int[] args) {
             return args[index];
         }
-
     }
 
     static class Function extends RootNode {
-
-        @Child private Expression body;
+        @SuppressWarnings("FieldMayBeFinal")
+        @Child
+        private Expression body;
 
         Function(Expression body) {
             super(null);
@@ -61,11 +56,13 @@ public class Demo1 {
     public static void main(String[] args) {
         // Sample Program: (args[0] + args[1]) + args[2]
         Function sample = new Function(new Add(new Add(new Arg(0), new Arg(1)), new Arg(2)));
-        CallTarget target = Truffle.getRuntime().createCallTarget(sample);
+        CallTarget target = sample.getCallTarget();
+        Object result = null;
         for (int i = 0; i < 1000; i++) {
-            target.call(new int[] { 10, 11, 21});
+            //noinspection PrimitiveArrayArgumentToVarargsMethod
+            result = target.call(new int[]{10, 11, 21});
         }
         System.out.println("done");
+        System.out.println("last result: " + result);
     }
-
 }
